@@ -1,0 +1,37 @@
+import QtQuick
+
+QtObject {
+    property bool dark: false
+    readonly property color canvas: dark ? "#111b25" : "#e7edf3"
+    readonly property color surface: dark ? "#1b2a38" : "#ffffff"
+    readonly property color panel: dark ? "#162330" : "#f4f7fb"
+    readonly property color field: dark ? "#12202d" : "#ffffff"
+    readonly property color text: dark ? "#f2f6fa" : "#172b3d"
+    readonly property color secondaryText: dark ? "#b4c4d3" : "#465c70"
+    readonly property color accent: dark ? "#82caff" : "#135d8a"
+    readonly property color accentText: dark ? "#08273d" : "#ffffff"
+    readonly property color accentHover: dark ? "#ace0ff" : "#0c4a71"
+    readonly property color hover: dark ? "#273d50" : "#e6eff7"
+    readonly property color selected: dark ? "#24445d" : "#d9eafa"
+    readonly property color border: dark ? "#8099af" : "#71869a"
+    readonly property color divider: dark ? "#40576c" : "#c1cfdb"
+    readonly property color focus: dark ? "#94d5ff" : "#116ba3"
+    readonly property color track: dark ? "#627b91" : "#71869a"
+    readonly property color disabledSurface: dark ? "#283747" : "#e4eaf0"
+    readonly property color disabledText: dark ? "#a5b5c5" : "#526273"
+    readonly property color disabledBorder: dark ? "#70879c" : "#8191a1"
+    readonly property color success: dark ? "#8bd9b2" : "#216044"
+    readonly property color warningText: dark ? "#ffd082" : "#7a4b00"
+    readonly property color warningSurface: dark ? "#3d3020" : "#fff0cc"
+    readonly property color error: dark ? "#ffacb4" : "#a12b36"
+    readonly property color errorSurface: dark ? "#452630" : "#fff0f2"
+    readonly property color scrim: "#99081018"
+    // Print previews keep paper colors in either application theme.
+    readonly property color paper: "#ffffff"
+    readonly property color paperText: "#172b3d"
+    readonly property color paperMuted: "#465c70"
+    readonly property color paperTag: "#e8f1f8"
+    readonly property color paperPlaceholder: "#f4f7fa"
+    readonly property color paperAccent: "#135d8a"
+    readonly property color paperBorder: "#71869a"
+}

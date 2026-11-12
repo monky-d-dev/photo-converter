@@ -1,0 +1,32 @@
+name: Compilar Windows
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          arch: win64_msvc2022_64
+          cache: true
+      - name: Compilar, probar y empaquetar
+        shell: pwsh
+        run: ./scripts/build-windows.ps1
+      - name: Descargar aplicación portátil
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoConverter-Windows-x64
+          path: dist/PhotoConverter-Windows-x64.zip
+          if-no-files-found: error

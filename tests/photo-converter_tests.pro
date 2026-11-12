@@ -1,0 +1,10 @@
+QT += core gui quick quickcontrols2 qml concurrent testlib
+CONFIG += c++17 testcase console
+CONFIG -= app_bundle
+TARGET = photo-converter_tests
+TEMPLATE = app
+INCLUDEPATH += ../src
+HEADERS += ../src/imaging.h ../src/batch.h ../src/backend.h ../src/previewprovider.h ../src/appearance.h
+SOURCES += photo-converter_tests.cpp ../src/imaging.cpp ../src/batch.cpp ../src/backend.cpp ../src/previewprovider.cpp ../src/appearance.cpp
+RESOURCES += ../src/resources.qrc
+win32-msvc*:QMAKE_CXXFLAGS += /utf-8
