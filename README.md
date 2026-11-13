@@ -83,7 +83,7 @@ El repositorio también incluye `.github/workflows/windows.yml`. Al ejecutarlo e
 
 Las pruebas guardan informes en `build/windows/tests/test-results.txt` y `test-results.xml`, y capturas en `build/windows/tests/captures/`. GitHub Actions los conserva en el artefacto **Windows-test-results**, incluso si alguna prueba falla. El script configura `QT_QPA_FONTDIR` con las fuentes de Windows para que las pruebas y capturas sin pantalla puedan mostrar los textos correctamente; si ya definiste esa variable, conserva tu directorio.
 
-**Estado de esta entrega:** el código, el motor y la interfaz se han probado en Linux con Qt 6.12; la compilación y ejecución nativas de Windows deben verificarse con el script o el workflow. El ZIP del código fuente no es un ejecutable de Windows.
+**Estado de esta entrega:** verificado en Linux con Qt 6.12 y en Windows con Qt 6.8.3 / MSVC 2022 x64: 36 resultados satisfactorios en cada sistema. La [ejecución de Windows del 13 de noviembre de 2026](https://github.com/monky-d-dev/photo-converter/actions/runs/43488639259) también comprobó el paquete desplegado y generó el ZIP portátil. El ZIP del código fuente no es un ejecutable de Windows.
 
 ## Desarrollo en Linux
 

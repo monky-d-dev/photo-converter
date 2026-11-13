@@ -6,6 +6,8 @@ Actualizado: 13 de noviembre de 2026.
 
 Linux x86_64, Qt 6.12.0, GCC 16.2.1. Interfaz Qt Quick ejecutada con plataforma offscreen y renderizado por software. No se cambió la configuración del escritorio.
 
+Windows Server 2022 x64, Qt 6.8.3 y MSVC 2022 en GitHub Actions. Las pruebas sin pantalla usan las fuentes del sistema mediante `QT_QPA_FONTDIR`; se revisaron las capturas de la pestaña 8 × 10 en ambos temas, con textos legibles y controles dentro de la ventana mínima.
+
 ## Resultados
 
 `bin/build`: compilación correcta.
@@ -45,10 +47,12 @@ Comprobaciones adicionales de la CLI: JSON válido, carpetas recursivas, nombre 
 
 `pdfinfo`: una página de **576 × 720 puntos**, equivalente a **8 × 10 pulgadas**, sin rotación. Renderizado con `pdftoppm` e inspección visual del archivo de prueba. Captura de la interfaz revisada visualmente.
 
-## Pendiente en Windows
+## Validación en Windows
 
-El script PowerShell y el workflow de GitHub Actions están preparados para compilar, ejecutar esta suite y generar un ZIP portátil con Qt 6.8.3 / MSVC 2022 x64. **No se han ejecutado en Windows desde este entorno.** No se incluye ni se afirma haber validado un `.exe` de Windows.
+La [ejecución 43488639259](https://github.com/monky-d-dev/photo-converter/actions/runs/43488639259) completó la compilación nativa, los **36 resultados satisfactorios, 0 fallos y sin advertencias**, el despliegue con `windeployqt` y las comprobaciones del ejecutable desplegado con un `PATH` sin Qt: exportación JPG y captura de la interfaz. Generó `PhotoConverter-Windows-x64.zip` como artefacto descargable.
 
-Antes de distribuir a producción: ejecutar el workflow o el script en Windows y revisar una impresión física al 100 %, con papel de 8 × 10 y sin expansión de impresión sin bordes. Los encuadres permanecen en memoria y no se guardan entre sesiones en esta versión.
+El script conserva informes de texto y JUnit, y capturas, en `build/windows/tests/`; GitHub Actions los adjunta como **Windows-test-results**, incluso cuando falla alguna prueba. La suite comprueba al iniciar que haya fuentes disponibles para evitar validar una interfaz con texto ausente.
+
+Queda pendiente revisar una impresión física al 100 %, con papel de 8 × 10 y sin expansión de impresión sin bordes. Los encuadres permanecen en memoria y no se guardan entre sesiones en esta versión.
 
 La CLI también se probó con `--margin-mm 0`, `1` y `2`: las separaciones medidas fueron 0, 24 y 48 píxeles entre fotos, respectivamente, a 300 ppp (dos márgenes por separación). Se aceptan márgenes por décimas, incluidos 0.1, 0.2, 0.3 y 0.4 mm; se rechazan precisiones no admitidas como 0.05 o 0.25 mm. Las pruebas de exportación PDF mantienen la página de 576 × 720 puntos.
