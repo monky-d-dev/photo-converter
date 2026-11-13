@@ -2,11 +2,13 @@
 
 1. Descomprime la carpeta completa. Abre `photo-converter.exe` sin moverlo fuera de sus carpetas y DLL.
 2. Pulsa **Agregar fotos** o **Cargar carpeta**. Deja activado **Incluir subcarpetas** para procesar todos los grupos dentro de un directorio.
-3. Ajusta los encuadres 3 × 2, 4 × 3 y 4 × 6 en una foto representativa. El selector **Giro** es independiente para cada tamaño: 3 × 2 y 4 × 3 empiezan en **90° a la izquierda** y 4 × 6 en **Sin giro**. Puedes cambiarlo cuando lo necesites; **Restablecer** vuelve a esos valores. Puedes mover la imagen arrastrándola y ampliar con la rueda o los controles.
+3. Ajusta los encuadres 3 × 2, 4 × 3 y 4 × 6 en una foto representativa. Si quieres una foto individual adicional, ajusta también la pestaña **8 × 10** y activa **Adjuntar 8x10**. Su encuadre es independiente del de 4 × 6 y aparece en la vista grande. El selector **Giro** es independiente para cada tamaño: 3 × 2 y 4 × 3 empiezan en **90° a la izquierda**; 4 × 6 y 8 × 10, en **Sin giro**. Puedes cambiarlo cuando lo necesites; **Restablecer** vuelve a esos valores. Puedes mover la imagen arrastrándola y ampliar con la rueda o los controles.
 4. Pulsa **Usar encuadres en todo el lote** para copiar también los giros. Después revisa y corrige las excepciones individualmente.
 5. Ajusta **Margen interior (mm)**, si lo necesitas: recupera el último valor usado y cambia en pasos de **0.1 mm**, incluidos valores menores de 0.5 mm; al primer inicio usa **0.5 mm** (0 lo quita). Se aplica a todas las hojas. Usa la última **Carpeta de salida**, que se recuerda entre sesiones, o elige otra fuera de las carpetas de origen, selecciona JPG, PNG o PDF y pulsa **Exportar lote**.
 
 Cada alumno genera un archivo de 8 × 10 pulgadas con siete copias a 300 ppp. El área superior derecha queda blanca. Las guías solo aparecen en pantalla. Se mantienen los nombres y las subcarpetas; los repetidos reciben un sufijo.
+
+**Adjuntar 8x10** agrega un segundo archivo por alumno con una sola foto de 2400 × 3000 px a 300 ppp, sin márgenes, en el formato elegido. Utiliza los ajustes de la pestaña **8 × 10**; puedes prepararlos aunque la opción de adjuntar esté desactivada. **Usar encuadres en todo el lote** copia los cuatro encuadres.
 
 Durante la exportación verás un spinner, barra, porcentaje, contador de fotos y archivo actual. El resto de la aplicación y el cierre de ventana quedan bloqueados. **Cancelar exportación** detiene el lote de forma segura y conserva los archivos terminados. Al finalizar aparece un aviso con el resultado, el número de archivos exportados y los errores; puedes abrir la carpeta o consultar los detalles de los fallos.
 

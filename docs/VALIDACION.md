@@ -1,6 +1,6 @@
 # Validación de la versión 0.1.0
 
-Actualizado: 11 de noviembre de 2026.
+Actualizado: 13 de noviembre de 2026.
 
 ## Entorno comprobado
 
@@ -10,7 +10,7 @@ Linux x86_64, Qt 6.12.0, GCC 16.2.1. Interfaz Qt Quick ejecutada con plataforma 
 
 `bin/build`: compilación correcta.
 
-`bin/test`: **35 resultados satisfactorios, 0 fallos** (incluye inicialización y limpieza). Los escenarios funcionales comprueban:
+`bin/test`: **36 resultados satisfactorios, 0 fallos** (incluye inicialización y limpieza). Los escenarios funcionales comprueban:
 
 - Hoja de 2400 × 3000 px y metadatos de 300 ppp; siete espacios sin solaparse y área blanca superior derecha de 2 × 4 pulgadas.
 - Recortes con proporciones correctas y límites de ampliación; advertencias de resolución efectiva.
@@ -30,7 +30,8 @@ Linux x86_64, Qt 6.12.0, GCC 16.2.1. Interfaz Qt Quick ejecutada con plataforma 
 - La búsqueda por carpetas excluye los archivos de salida, mientras que una imagen seleccionada individualmente en ese directorio sigue siendo válida. Las restricciones de carpetas de origen se retiran al quitar sus últimas fotos.
 - Aviso visible de carga fallida, con motivo, comprobado en los temas claro y oscuro.
 - Exportación JPG, PNG y PDF; fallos de escritura; conservación de los originales y de exportaciones anteriores.
-- Opción **Adjuntar 8x10**, desactivada inicialmente: añade una foto vertical de 2400 × 3000 px a 300 ppp en JPG, PNG o PDF sin modificar la composición habitual. Se comprueban orientación EXIF, los cuatro giros, recorte sin deformación, posición y ampliación tomadas de 4 × 6, subcarpetas, sufijos sin sobrescritura, contador de archivos, pendientes al cambiar la opción y bloqueo durante la exportación. Activación y exportación por clic en ambos temas y a tamaño mínimo de ventana.
+- Opción **Adjuntar 8x10**, desactivada inicialmente: añade una foto vertical de 2400 × 3000 px a 300 ppp en JPG, PNG o PDF sin modificar la composición habitual. Se comprueban orientación EXIF, los cuatro giros, recorte sin deformación, encuadre independiente de 4 × 6, subcarpetas, sufijos sin sobrescritura, contador de archivos, pendientes al cambiar la opción y bloqueo durante la exportación. Activación y exportación por clic en ambos temas y a tamaño mínimo de ventana.
+- Pestaña **8 × 10**: vista grande de la foto individual, giro, ampliación y posición vertical mediante controles reales; deshacer y rehacer por teclado. Comparación del adjunto exportado con su encuadre propio, sin modificar 4 × 6. Vista previa sin márgenes, incluso con margen de corte de 10 mm; aplicación al lote y a nuevas fotografías, restablecimiento, historial y selección entre alumnos. Capturas revisadas en ambos temas a 1080 × 740, sin advertencias QML.
 - Cancelación con adjuntos: conserva los dos archivos de cada fotografía terminada y deja las siguientes pendientes.
 - Cancelación con conservación de archivos terminados.
 - Procesamiento de **50 fotografías**, con 50 archivos de salida correctos.

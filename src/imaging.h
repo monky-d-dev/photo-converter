@@ -18,8 +18,9 @@ struct Crop {
     bool operator==(const Crop &other) const { return x == other.x && y == other.y && zoom == other.zoom && rotation == other.rotation; }
     bool operator!=(const Crop &other) const { return !(*this == other); }
 };
-using Crops = std::array<Crop, 3>;
-inline constexpr Crops DefaultCrops{{Crop{.5, .5, 1., 270}, Crop{.5, .5, 1., 270}, Crop{}}};
+constexpr int PortraitCrop = 3;
+using Crops = std::array<Crop, 4>;
+inline constexpr Crops DefaultCrops{{Crop{.5, .5, 1., 270}, Crop{.5, .5, 1., 270}, Crop{}, Crop{}}};
 struct Slot { QRectF inches; int crop; };
 const std::array<Slot, 7> &layoutSlots();
 bool validMargin(double marginMm);

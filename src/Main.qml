@@ -56,6 +56,7 @@ ApplicationWindow {
     readonly property color muted: colors.secondaryText
     readonly property color accent: colors.accent
     property int cropIndex: 0
+    readonly property bool portraitSelected: cropIndex === 3
     property bool showGuides: true
     property bool allowClose: false
     readonly property bool actionShortcutsEnabled: !backend.exporting && !exportResultDialog.visible
@@ -456,10 +457,10 @@ ApplicationWindow {
                 Layout.fillWidth: true; Layout.leftMargin: 22; Layout.rightMargin: 22; Layout.topMargin: 17; Layout.bottomMargin: 10
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 3
-                    Label { text: qsTr("Hoja de impresión"); color: win.ink; font.pixelSize: 17; font.weight: Font.DemiBold }
+                    Label { objectName: "previewTitle"; text: win.portraitSelected ? qsTr("Foto individual 8 × 10") : qsTr("Hoja de impresión"); color: win.ink; font.pixelSize: 17; font.weight: Font.DemiBold }
                     SmallLabel { text: backend.count ? backend.currentName : qsTr("Una composición por fotografía"); elide: Text.ElideMiddle; wrapMode: Text.NoWrap; Layout.fillWidth: true }
                 }
-                AppCheckBox { objectName: "guidesCheck"; text: qsTr("Guías"); checked: win.showGuides; onToggled: win.showGuides = checked; font.pixelSize: 12 }
+                AppCheckBox { objectName: "guidesCheck"; text: qsTr("Guías"); checked: win.showGuides; enabled: !win.portraitSelected; onToggled: win.showGuides = checked; font.pixelSize: 12 }
             }
             Rectangle {
                 objectName: "importErrorBanner"
@@ -488,7 +489,7 @@ ApplicationWindow {
                         id: sheetImage
                         objectName: "sheetImage"
                         anchors.fill: parent
-                        source: backend.count ? "image://preview/sheet/" + backend.revision : ""
+                        source: backend.count ? (win.portraitSelected ? "image://preview/crop/3/" : "image://preview/sheet/") + backend.revision : ""
                         cache: false
                         asynchronous: false
                         fillMode: Image.Stretch
@@ -497,6 +498,7 @@ ApplicationWindow {
                         model: win.slotRects
                         Rectangle {
                             required property var modelData
+                            visible: !win.portraitSelected
                             x: modelData.x / 8 * paper.width; y: modelData.y / 10 * paper.height
                             width: modelData.w / 8 * paper.width; height: modelData.h / 10 * paper.height
                             color: backend.count ? "transparent" : colors.paperPlaceholder
@@ -520,7 +522,7 @@ ApplicationWindow {
                     Label {
                         x: paper.width * .75; y: paper.height * .17; width: paper.width * .25
                         text: qsTr("Espacio\nlibre"); horizontalAlignment: Text.AlignHCenter
-                        color: colors.paperMuted; font.pixelSize: 12; visible: win.showGuides
+                        color: colors.paperMuted; font.pixelSize: 12; visible: win.showGuides && !win.portraitSelected
                     }
                     Label {
                         anchors.centerIn: parent; visible: backend.count && sheetImage.status === Image.Error
@@ -549,16 +551,17 @@ ApplicationWindow {
                     spacing: 8
                     Item { Layout.preferredHeight: 4 }
                     Label { text: qsTr("Encuadre por tamaño"); color: win.ink; font.pixelSize: 16; font.weight: Font.DemiBold; Layout.leftMargin: 18 }
-                    SmallLabel { text: qsTr("Solo esta foto; las copias del mismo tamaño se ajustan juntas."); Layout.fillWidth: true; Layout.leftMargin: 18; Layout.rightMargin: 18 }
+                    SmallLabel { text: win.portraitSelected ? qsTr("Encuadre independiente para la foto adjunta de 8 × 10.") : qsTr("Solo esta foto; las copias del mismo tamaño se ajustan juntas."); Layout.fillWidth: true; Layout.leftMargin: 18; Layout.rightMargin: 18 }
                     RowLayout {
                         Layout.fillWidth: true; Layout.leftMargin: 18; Layout.rightMargin: 18; spacing: 5
                         Repeater {
-                            model: ["3 × 2", "4 × 3", "4 × 6"]
+                            model: ["3 × 2", "4 × 3", "4 × 6", "8 × 10"]
                             ActionButton {
                                 required property string modelData
                                 required property int index
                                 objectName: "ratio_" + index
-                                text: modelData; primary: win.cropIndex === index; Layout.fillWidth: true
+                                text: modelData; primary: win.cropIndex === index; Layout.fillWidth: true; Layout.preferredWidth: 1
+                                padding: 6; font.pixelSize: 12
                                 onClicked: win.cropIndex = index
                             }
                         }
@@ -566,7 +569,7 @@ ApplicationWindow {
                     Rectangle {
                         id: cropArea
                         objectName: "cropArea"
-                        Layout.fillWidth: true; Layout.leftMargin: 18; Layout.rightMargin: 18; Layout.preferredHeight: 172
+                        Layout.fillWidth: true; Layout.leftMargin: 18; Layout.rightMargin: 18; Layout.preferredHeight: win.height < 800 ? 132 : 172
                         color: colors.canvas; clip: true
                         Image {
                             id: cropImage
@@ -622,6 +625,12 @@ ApplicationWindow {
                         Layout.fillWidth: true; Layout.leftMargin: 12; Layout.rightMargin: 12; spacing: 0
                         ActionButton { text: qsTr("Restablecer"); quiet: true; Layout.fillWidth: true; enabled: backend.count > 0 && !backend.busy; onClicked: backend.resetCrops() }
                         ActionButton { text: qsTr("Deshacer"); quiet: true; Layout.fillWidth: true; enabled: backend.canUndo; onClicked: backend.undo() }
+                    }
+                    SmallLabel {
+                        objectName: "portraitExportHint"
+                        text: qsTr("Activa «Adjuntar 8x10» para exportar esta foto.")
+                        visible: win.portraitSelected && !backend.attach8x10
+                        Layout.fillWidth: true; Layout.leftMargin: 18; Layout.rightMargin: 18
                     }
                     Rectangle { Layout.fillWidth: true; Layout.leftMargin: 18; Layout.rightMargin: 18; height: 1; color: colors.divider }
                     ActionButton {
@@ -679,7 +688,7 @@ ApplicationWindow {
                     font.pixelSize: 12
                     onToggled: backend.setAttach8x10(checked)
                     ToolTip.visible: hovered
-                    ToolTip.text: qsTr("Añade una foto de 8 de ancho × 10 de alto a 300 ppp, sin márgenes. Usa el giro, posición y ampliación de 4 × 6, adaptados a 8 × 10.")
+                    ToolTip.text: qsTr("Añade una foto de 8 de ancho × 10 de alto a 300 ppp, sin márgenes. Ajusta su encuadre independiente en la pestaña 8 × 10.")
                 }
                 AppCheckBox { id: pendingOnly; objectName: "pendingOnly"; text: qsTr("Solo pendientes"); checked: true; enabled: !backend.busy; font.pixelSize: 12 }
                 ActionButton {
@@ -745,7 +754,7 @@ ApplicationWindow {
         anchors.centerIn: Overlay.overlay
         modal: true; width: 440
         title: qsTr("Aplicar encuadres al lote")
-        Label { color: colors.text; width: parent.width; wrapMode: Text.WordWrap; text: qsTr("Se reemplazarán los tres encuadres, incluidos sus giros, de todas las fotografías por los de la foto seleccionada. Puedes deshacer este cambio con Ctrl+Z.") }
+        Label { color: colors.text; width: parent.width; wrapMode: Text.WordWrap; text: qsTr("Se reemplazarán los cuatro encuadres, incluido el de 8 × 10 y sus giros, de todas las fotografías por los de la foto seleccionada. Puedes deshacer este cambio con Ctrl+Z.") }
         footer: AppDialogButtons {
             ActionButton { text: qsTr("Cancelar"); DialogButtonBox.buttonRole: DialogButtonBox.RejectRole }
             ActionButton { objectName: "confirmApply"; text: qsTr("Aplicar a todas"); primary: true; DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole }
@@ -809,7 +818,7 @@ ApplicationWindow {
             Label {
                 color: colors.text
                 width: helpScroll.availableWidth; wrapMode: Text.WordWrap
-                text: qsTr("1. Agrega fotos o carga una carpeta.\n2. Ajusta los tres tamaños con los controles o arrastrando la vista del encuadre. La rueda amplía.\n3. Aplica los encuadres a todo el lote y revisa las excepciones.\n4. Elige una carpeta de salida y exporta.\n\nCada foto produce una hoja de 8 × 10 pulgadas a 300 ppp, con 7 copias. Los nombres repetidos reciben un sufijo. JPG y PNG contienen la resolución de impresión; el PDF conserva el tamaño de página.\n\nCtrl+O: agregar fotos\nCtrl+Shift+O: cargar carpeta\nCtrl+Z / Ctrl+Shift+Z: deshacer / rehacer\nCtrl+Enter o Espacio: exportar\n?: ayuda    Q: cerrar\n\nAl imprimir, selecciona tamaño real / 100 %, sin ajustar a página. Usa papel de 8 × 10 pulgadas e impresión sin bordes para conservar todas las medidas.")
+                text: qsTr("1. Agrega fotos o carga una carpeta.\n2. Ajusta los tamaños con los controles o arrastrando la vista del encuadre. La rueda amplía. La pestaña 8 × 10 tiene un encuadre independiente para la foto individual.\n3. Aplica los encuadres a todo el lote y revisa las excepciones.\n4. Activa Adjuntar 8x10 si quieres incluir la foto individual. Elige una carpeta de salida y exporta.\n\nCada foto produce una hoja de 8 × 10 pulgadas a 300 ppp, con 7 copias. Los nombres repetidos reciben un sufijo. JPG y PNG contienen la resolución de impresión; el PDF conserva el tamaño de página.\n\nCtrl+O: agregar fotos\nCtrl+Shift+O: cargar carpeta\nCtrl+Z / Ctrl+Shift+Z: deshacer / rehacer\nCtrl+Enter o Espacio: exportar\n?: ayuda    Q: cerrar\n\nAl imprimir, selecciona tamaño real / 100 %, sin ajustar a página. Usa papel de 8 × 10 pulgadas e impresión sin bordes para conservar todas las medidas.")
             }
         }
         footer: AppDialogButtons { ActionButton { text: qsTr("Entendido"); DialogButtonBox.buttonRole: DialogButtonBox.RejectRole } }

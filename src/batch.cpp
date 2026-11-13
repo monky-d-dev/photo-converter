@@ -129,7 +129,7 @@ ExportResult exportPhotos(const QVector<Photo> &photos, const QString &directory
                         const QString portraitOutput = exportTarget(directory, photo.relative, format, true);
                         if (portraitOutput.isEmpty()) error = QStringLiteral("Adjunto 8x10: no se pudo crear una ruta de salida segura.");
                         else if (canonicalPath(portraitOutput) == canonicalPath(photo.path)) error = QStringLiteral("Adjunto 8x10: el destino coincide con el original.");
-                        else if (Imaging::save(Imaging::portrait8x10(source, photo.crops[2]), portraitOutput, format, &error)) ++result.files;
+                        else if (Imaging::save(Imaging::portrait8x10(source, photo.crops[Imaging::PortraitCrop]), portraitOutput, format, &error)) ++result.files;
                         else error = QStringLiteral("Adjunto 8x10: %1").arg(error);
                     }
                 }

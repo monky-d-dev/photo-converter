@@ -442,6 +442,7 @@ private slots:
         QVERIFY(!backend.attach8x10());
         backend.setTargetFolder(QUrl::fromLocalFile(output.path()));
         backend.setRotation(2, 180); backend.setCrop(2, .2, .8, 1.3);
+        backend.setRotation(3, 90); backend.setCrop(3, .8, .2, 1.6);
         const auto crops = backend.current()->crops;
         backend.exportAll("png", true);
         QTRY_VERIFY_WITH_TIMEOUT(!backend.busy(), 30000);
@@ -454,15 +455,58 @@ private slots:
         QCOMPARE(backend.exportFiles(), 2); QCOMPARE(backend.exportSucceeded(), 1);
         QVERIFY(!backend.dirty());
         const QImage portrait(output.filePath("alumna_foto_8x10.png"));
-        const auto expected = Imaging::portrait8x10(Imaging::load(source, nullptr), crops[2]);
+        const auto expected = Imaging::portrait8x10(Imaging::load(source, nullptr), crops[3]);
         QCOMPARE(portrait.convertToFormat(QImage::Format_RGB32), expected);
         backend.exportAll("png", true); QVERIFY(!backend.busy());
         QCOMPARE(QDir(output.path()).entryList(QDir::Files).size(), 3);
+        backend.setCrop(3, .5, .5, 2); QVERIFY(backend.dirty());
+        QCOMPARE(backend.current()->crops[2], crops[2]);
+        backend.undo(); QCOMPARE(backend.current()->crops[3], crops[3]);
         backend.setAttach8x10(false); QVERIFY(backend.dirty());
         backend.exportAll("png", true);
         QTRY_VERIFY_WITH_TIMEOUT(!backend.busy(), 30000);
         QCOMPARE(backend.exportFiles(), 1);
         QCOMPARE(QDir(output.path()).entryList(QDir::Files).size(), 4);
+    }
+
+    void portraitCropIsIndependentAcrossPreviewHistoryAndBatch() {
+        QTemporaryDir input;
+        const auto a = imageFile(input.filePath("a.png"));
+        const auto b = imageFile(input.filePath("b.png"));
+        Backend backend; backend.loadInitialPhotos({a, b});
+        QCOMPARE(backend.currentCrops().size(), 4);
+        backend.setRotation(2, 180); backend.setCrop(2, .2, .8, 1.3);
+        const auto sheetCrops = backend.current()->crops;
+        const auto sheet = Imaging::sheet(QImage(a), sheetCrops, 30);
+        backend.setRotation(3, 90); backend.setCrop(3, .8, .2, 1.6);
+        const auto portraitCrop = backend.current()->crops[3];
+        QCOMPARE(backend.current()->crops[2], sheetCrops[2]);
+        QCOMPARE(Imaging::sheet(QImage(a), backend.current()->crops, 30), sheet);
+        PreviewProvider provider(&backend);
+        QSize size;
+        const auto preview = provider.requestImage("crop/3/0", &size, {});
+        QCOMPARE(size, QSize(720, 900));
+        QCOMPARE(preview, Imaging::portrait8x10(QImage(a), portraitCrop, 90));
+        // Cut margins belong to the package; the attached photo fills every edge.
+        backend.setMarginMm(10);
+        QCOMPARE(provider.requestImage("crop/3/1", &size, {}), preview);
+        QCOMPARE(preview.pixelColor(0, 0), QColor(Qt::blue));
+        QCOMPARE(preview.pixelColor(719, 899), QColor(Qt::blue));
+        backend.applyToAll(); backend.select(1);
+        QCOMPARE(backend.current()->crops[3], portraitCrop);
+        backend.undo(); QCOMPARE(backend.current()->crops[3], Imaging::Crop{});
+        backend.redo(); QCOMPARE(backend.current()->crops[3], portraitCrop);
+        backend.resetCrops(); QCOMPARE(backend.current()->crops[3], Imaging::Crop{});
+        backend.undo(); QCOMPARE(backend.current()->crops[3], portraitCrop);
+        const auto c = imageFile(input.filePath("c.png"));
+        backend.addUrls({QUrl::fromLocalFile(c)}, false);
+        QTRY_VERIFY_WITH_TIMEOUT(!backend.busy(), 5000);
+        backend.select(2); QCOMPARE(backend.current()->crops[3], portraitCrop);
+        backend.select(0); QCOMPARE(backend.current()->crops[3], portraitCrop);
+        backend.setCrop(4, 0, 0, 2); backend.setRotation(4, 90);
+        QCOMPARE(backend.current()->crops[3], portraitCrop);
+        backend.clear(); backend.loadInitialPhotos({a});
+        QCOMPARE(backend.current()->crops[3], Imaging::Crop{});
     }
 
     void savesAllFormatsAndReportsWriteFailure() {
@@ -915,8 +959,40 @@ private slots:
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(attachment));
         QVERIFY(backend.attach8x10()); QVERIFY(backend.dirty());
         QVERIFY(point(attachment).x() < point(button).x());
+        const auto packageCrop = backend.current()->crops[2];
+        auto *portraitRatio = findItem(window->contentItem(), "ratio_3"); QVERIFY(portraitRatio);
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(portraitRatio));
+        QCOMPARE(window->property("cropIndex").toInt(), 3);
+        QCOMPARE(rotation->property("currentIndex").toInt(), 0);
+        auto *previewTitle = findItem(window->contentItem(), "previewTitle"); QVERIFY(previewTitle);
+        QCOMPARE(previewTitle->property("text").toString(), QString("Foto individual 8 × 10"));
+        auto *sheetImage = findItem(window->contentItem(), "sheetImage"); QVERIFY(sheetImage);
+        QVERIFY(sheetImage->property("source").toUrl().toString().startsWith("image://preview/crop/3/"));
+        auto *ratioText = portraitRatio->property("contentItem").value<QQuickItem *>(); QVERIFY(ratioText);
+        QVERIFY(!ratioText->property("truncated").toBool());
+        QTest::qWait(100);
         if (!captureDirectory.isEmpty())
-            QVERIFY(window->grabWindow().save(QDir(captureDirectory).filePath("adjuntar-8x10-" + theme + ".png")));
+            QVERIFY(window->grabWindow().save(QDir(captureDirectory).filePath("pestana-8x10-" + theme + ".png")));
+        rotation->forceActiveFocus(); QTest::keyClick(window, Qt::Key_Down);
+        QCOMPARE(backend.current()->crops[3].rotation, 90);
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(slider, {slider->width() * .35, slider->height() / 2}));
+        QVERIFY(backend.current()->crops[3].zoom > 1.4);
+        auto *vertical = findItem(window->contentItem(), "ySlider"); QVERIFY(vertical);
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(vertical, {6, vertical->height() / 2}));
+        QCOMPARE(backend.current()->crops[3].y, 0.);
+        QTest::keyClick(window, Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(backend.current()->crops[3].y, .5);
+        QTest::keyClick(window, Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(backend.current()->crops[3].y, 0.);
+        const auto portraitCrop = backend.current()->crops[3];
+        QCOMPARE(backend.current()->crops[2], packageCrop);
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(ratio));
+        QCOMPARE(rotation->property("currentIndex").toInt(), packageCrop.rotation / 90);
+        QCOMPARE(backend.current()->crops[3], portraitCrop);
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(portraitRatio));
+        QTest::qWait(100);
+        if (!captureDirectory.isEmpty())
+            QVERIFY(window->grabWindow().save(QDir(captureDirectory).filePath("encuadre-8x10-" + theme + ".png")));
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(button));
         QVERIFY(!attachment->isEnabled());
         QTRY_VERIFY_WITH_TIMEOUT(!backend.busy(), 30000);
@@ -925,6 +1001,13 @@ private slots:
         QVERIFY(QFile::exists(output.filePath("alumno_8x10_2.jpg")));
         const QImage attached(output.filePath("alumno_foto_8x10.jpg"));
         QCOMPARE(attached.size(), QSize(2400, 3000));
+        const auto expectedPortrait = Imaging::portrait8x10(QImage(a), portraitCrop);
+        for (const QPoint p : {QPoint(300, 300), QPoint(1200, 1500), QPoint(2100, 2700)}) {
+            const auto actual = attached.pixelColor(p), expected = expectedPortrait.pixelColor(p);
+            QVERIFY(qAbs(actual.red() - expected.red()) < 12);
+            QVERIFY(qAbs(actual.green() - expected.green()) < 12);
+            QVERIFY(qAbs(actual.blue() - expected.blue()) < 12);
+        }
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point(acceptResult));
         QTRY_VERIFY(!resultDialog->property("visible").toBool());
         backend.clear(); QTest::qWait(100);

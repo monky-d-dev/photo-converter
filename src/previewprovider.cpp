@@ -14,6 +14,8 @@ QImage PreviewProvider::requestImage(const QString &id, QSize *size, const QSize
     if (m_source.isNull()) return {};
     QImage result;
     if (id.startsWith("sheet/")) result = Imaging::sheet(m_source, photo->crops, 90, m_backend->marginMm());
+    else if (id.section('/', 1, 1).toInt() == Imaging::PortraitCrop)
+        result = Imaging::portrait8x10(m_source, photo->crops[Imaging::PortraitCrop], 90);
     else {
         const int crop = qBound(0, id.section('/', 1, 1).toInt(), 2);
         const auto &layout = Imaging::layoutSlots();

@@ -161,7 +161,7 @@ void Backend::restore(const History &h) {
     touch();
 }
 void Backend::setCrop(int index, double x, double y, double zoom) {
-    if (busy() || !current() || index < 0 || index > 2) return;
+    if (busy() || !current() || index < 0 || index >= int(m_defaults.size())) return;
     if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(zoom)) return;
     const Imaging::Crop crop{std::clamp(x, 0., 1.), std::clamp(y, 0., 1.), std::clamp(zoom, 1., 3.), current()->crops.at(index).rotation};
     if (current()->crops.at(index) == crop) return;
@@ -172,7 +172,7 @@ void Backend::setCrop(int index, double x, double y, double zoom) {
     touch();
 }
 void Backend::setRotation(int index, int degrees) {
-    if (busy() || !current() || index < 0 || index > 2 || degrees % 90 != 0) return;
+    if (busy() || !current() || index < 0 || index >= int(m_defaults.size()) || degrees % 90 != 0) return;
     const int rotation = Imaging::normalizedRotation(degrees);
     if (current()->crops.at(index).rotation == rotation) return;
     remember();
@@ -212,7 +212,7 @@ void Backend::applyToAll() {
     remember();
     m_defaults = current()->crops;
     for (auto &p : m_photos) { p.crops = m_defaults; p.status = QStringLiteral("Pendiente"); p.error.clear(); }
-    m_message = QStringLiteral("Los tres encuadres se aplicaron a %1 fotografías y a las próximas que agregues.").arg(count());
+    m_message = QStringLiteral("Los cuatro encuadres se aplicaron a %1 fotografías y a las próximas que agregues.").arg(count());
     touch();
 }
 void Backend::removeSelected() {
