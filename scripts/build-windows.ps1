@@ -4,6 +4,8 @@ $Root = Split-Path -Parent $PSScriptRoot
 $PreviousPlatform = $env:QT_QPA_PLATFORM
 $PreviousTheme = $env:QT_QPA_PLATFORMTHEME
 $PreviousBackend = $env:QT_QUICK_BACKEND
+$PreviousLogging = $env:QT_FORCE_STDERR_LOGGING
+$PreviousCaptures = $env:PHOTO_CONVERTER_CAPTURE_DIR
 
 function Invoke-Native {
     param([string]$Program, [string[]]$Arguments)
@@ -35,7 +37,12 @@ try {
 
 if (-not $SkipTests) {
     $Tests = Join-Path $Build 'tests'
+    $Report = Join-Path $Tests 'test-results.txt'
+    $XmlReport = Join-Path $Tests 'test-results.xml'
+    $Captures = Join-Path $Tests 'captures'
     New-Item -ItemType Directory -Force $Tests | Out-Null
+    New-Item -ItemType Directory -Force $Captures | Out-Null
+    Remove-Item $Report, $XmlReport -ErrorAction SilentlyContinue
     Push-Location $Tests
     try {
         Invoke-Native $Qmake.Source @((Join-Path $Root 'tests/photo-converter_tests.pro'), 'CONFIG+=release', 'CONFIG-=debug_and_release', 'CONFIG-=debug')
@@ -43,11 +50,16 @@ if (-not $SkipTests) {
         $env:QT_QPA_PLATFORM = 'offscreen'
         $env:QT_QPA_PLATFORMTHEME = 'generic'
         $env:QT_QUICK_BACKEND = 'software'
-        Invoke-Native (Join-Path $Tests 'photo-converter_tests.exe') @()
+        $env:QT_FORCE_STDERR_LOGGING = '1'
+        $env:PHOTO_CONVERTER_CAPTURE_DIR = $Captures
+        Invoke-Native (Join-Path $Tests 'photo-converter_tests.exe') @('-o', "$Report,txt", '-o', "$XmlReport,junitxml")
     } finally {
+        if (Test-Path $Report) { Get-Content $Report }
         $env:QT_QPA_PLATFORM = $PreviousPlatform
         $env:QT_QPA_PLATFORMTHEME = $PreviousTheme
         $env:QT_QUICK_BACKEND = $PreviousBackend
+        $env:QT_FORCE_STDERR_LOGGING = $PreviousLogging
+        $env:PHOTO_CONVERTER_CAPTURE_DIR = $PreviousCaptures
         Pop-Location
     }
 }
