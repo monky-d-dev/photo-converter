@@ -3,6 +3,7 @@
 #include "previewprovider.h"
 #include <QColorSpace>
 #include <QFile>
+#include <QFontDatabase>
 #include <QImageReader>
 #include <QJsonDocument>
 #include <QPainter>
@@ -48,7 +49,11 @@ class PhotoConverterTests : public QObject {
     }
 
 private slots:
-    void initTestCase() { QQuickStyle::setStyle("Basic"); }
+    void initTestCase() {
+        QQuickStyle::setStyle("Basic");
+        QVERIFY2(!QFontDatabase::families().isEmpty(),
+                 "No fonts available for UI tests. Set QT_QPA_FONTDIR to the system fonts directory.");
+    }
 
     void appearanceRemembersChosenTheme() {
         QTemporaryDir dir;

@@ -81,6 +81,8 @@ La aplicación portátil también queda lista para abrir en `dist/PhotoConverter
 
 El repositorio también incluye `.github/workflows/windows.yml`. Al ejecutarlo en GitHub Actions se genera el ZIP como artefacto descargable. No publica releases ni envía archivos a otros servicios.
 
+Las pruebas guardan informes en `build/windows/tests/test-results.txt` y `test-results.xml`, y capturas en `build/windows/tests/captures/`. GitHub Actions los conserva en el artefacto **Windows-test-results**, incluso si alguna prueba falla. El script configura `QT_QPA_FONTDIR` con las fuentes de Windows para que las pruebas y capturas sin pantalla puedan mostrar los textos correctamente; si ya definiste esa variable, conserva tu directorio.
+
 **Estado de esta entrega:** el código, el motor y la interfaz se han probado en Linux con Qt 6.12; la compilación y ejecución nativas de Windows deben verificarse con el script o el workflow. El ZIP del código fuente no es un ejecutable de Windows.
 
 ## Desarrollo en Linux

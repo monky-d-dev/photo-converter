@@ -6,6 +6,8 @@ $PreviousTheme = $env:QT_QPA_PLATFORMTHEME
 $PreviousBackend = $env:QT_QUICK_BACKEND
 $PreviousLogging = $env:QT_FORCE_STDERR_LOGGING
 $PreviousCaptures = $env:PHOTO_CONVERTER_CAPTURE_DIR
+$PreviousFontDirectory = $env:QT_QPA_FONTDIR
+$OffscreenFontDirectory = if ($PreviousFontDirectory) { $PreviousFontDirectory } else { Join-Path $env:SystemRoot 'Fonts' }
 
 function Invoke-Native {
     param([string]$Program, [string[]]$Arguments)
@@ -50,6 +52,8 @@ if (-not $SkipTests) {
         $env:QT_QPA_PLATFORM = 'offscreen'
         $env:QT_QPA_PLATFORMTHEME = 'generic'
         $env:QT_QUICK_BACKEND = 'software'
+        # The offscreen plugin uses a file-based font database, not the Windows desktop database.
+        $env:QT_QPA_FONTDIR = $OffscreenFontDirectory
         $env:QT_FORCE_STDERR_LOGGING = '1'
         $env:PHOTO_CONVERTER_CAPTURE_DIR = $Captures
         Invoke-Native (Join-Path $Tests 'photo-converter_tests.exe') @('-o', "$Report,txt", '-o', "$XmlReport,junitxml")
@@ -60,6 +64,7 @@ if (-not $SkipTests) {
         $env:QT_QUICK_BACKEND = $PreviousBackend
         $env:QT_FORCE_STDERR_LOGGING = $PreviousLogging
         $env:PHOTO_CONVERTER_CAPTURE_DIR = $PreviousCaptures
+        $env:QT_QPA_FONTDIR = $PreviousFontDirectory
         Pop-Location
     }
 }
@@ -93,12 +98,14 @@ try {
     $env:QT_QPA_PLATFORM = 'offscreen'
     $env:QT_QPA_PLATFORMTHEME = 'generic'
     $env:QT_QUICK_BACKEND = 'software'
+    $env:QT_QPA_FONTDIR = $OffscreenFontDirectory
     Invoke-Native (Join-Path $Deploy 'photo-converter.exe') @('open', (Join-Path $Root 'docs/demo-portrait.png'), '--capture', (Join-Path $Smoke 'interfaz.png'))
 } finally {
     $env:PATH = $OldPath
     $env:QT_QPA_PLATFORM = $PreviousPlatform
     $env:QT_QPA_PLATFORMTHEME = $PreviousTheme
     $env:QT_QUICK_BACKEND = $PreviousBackend
+    $env:QT_QPA_FONTDIR = $PreviousFontDirectory
 }
 $Archive = Join-Path $Root 'dist/PhotoConverter-Windows-x64.zip'
 Compress-Archive -Path (Join-Path $Deploy '*') -DestinationPath $Archive -Force
